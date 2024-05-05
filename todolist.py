@@ -1,71 +1,167 @@
-#importing packages
-from  tkinter import *
-import tkinter.messagebox
+from tkinter import *
 
+from tkinter import messagebox
 
-def entertask():
-    # A new window to pop up to take input
-    input_text = ""
+tasks_list = []
 
-    def add():
-        input_text = entry_task.get(1.0, "end-1c")
-        if input_text == "":
-            tkinter.messagebox.showwarning(title="Warning!", message="Please Enter some Text")
-        else:
-            listbox_task.insert(END, input_text)
-            # close the root1 window
-            root1.destroy()
+counter = 1
 
-    root1 = Tk()
-    root1.title("Add task")
-    entry_task = Text(root1, width=40, height=4)
-    entry_task.pack()
-    button_temp = Button(root1, text="Add task", command=add)
-    button_temp.pack()
-    root1.mainloop()
+def inputError() :
+	
+	if enterTaskField.get() == "" :
+		
+		messagebox.showerror("Input Error")
+		
+		return 0
+	
+	return 1
 
+def clear_taskNumberField() :
+	
+	taskNumberField.delete(0.0, END)
 
-# function to facilitate the delete task from the Listbox
-def deletetask():
-    # selects the selected item and then deletes it
-    selected = listbox_task.curselection()
-    listbox_task.delete(selected[0])
+def clear_taskField() :
 
+	enterTaskField.delete(0, END)
+	
+def insertTask():
 
-# Executes this to mark completed
+	global counter
+	
+	# check for error
+	value = inputError()
 
-def markcompleted():
-    marked = listbox_task.curselection()
-    temp = marked[0]
-    temp_marked = listbox_task.get(marked)
-    temp_marked = temp_marked + " ✔"
-    listbox_task.delete(temp)
-    listbox_task.insert(temp, temp_marked)
+	# if error occur then return
+	if value == 0 :
+		return
 
-window=Tk()
-window.title("To-Do List")
+	# get the task string concatenating
+	# with new line character
+	content = enterTaskField.get() + "\n"
 
+	# store task in the list
+	tasks_list.append(content)
 
-frame_task=Frame(window)
-frame_task.pack()
+	# insert content of task entry field to the text area
+	# add task one by one in below one by one
+	TextArea.insert('end -1 chars', "[ " + str(counter) + " ] " + content)
 
-listbox_task=Listbox(frame_task,bg="black",fg="white",height=15,width=50,font = "Helvetica")
-listbox_task.pack(side=tkinter.LEFT)
+	# incremented
+	counter += 1
 
-scrollbar_task=Scrollbar(frame_task)
-scrollbar_task.pack(side=tkinter.RIGHT,fill=tkinter.Y)
-listbox_task.config(yscrollcommand=scrollbar_task.set)
-scrollbar_task.config(command=listbox_task.yview)
+	# function calling for deleting the content of task field
+	clear_taskField()
 
+# function for deleting the specified task
+def delete() :
+	
+	global counter
+	
+	# handling the empty task error
+	if len(tasks_list) == 0 :
+		messagebox.showerror("No task")
+		return
 
-entry_button=Button(window,text="Add task",width=50,command=entertask)
-entry_button.pack(pady=3)
+	# get the task number, which is required to delete
+	number = taskNumberField.get(1.0, END)
 
-delete_button=Button(window,text="Delete selected task",width=50,command=deletetask)
-delete_button.pack(pady=3)
+	# checking for input error when
+	# empty input in task number field
+	if number == "\n" :
+		messagebox.showerror("input error")
+		return
+	
+	else :
+		task_no = int(number)
 
-mark_button=Button(window,text="Mark as completed ",width=50,command=markcompleted)
-mark_button.pack(pady=3)
+	# function calling for deleting the
+	# content of task number field
+	clear_taskNumberField()
+	
+	# deleted specified task from the list
+	tasks_list.pop(task_no - 1)
 
+	# decremented 
+	counter -= 1
+	
+	# whole content of text area widget is deleted
+	TextArea.delete(1.0, END)
 
-window.mainloop()
+	# rewriting the task after deleting one task at a time
+	for i in range(len(tasks_list)) :
+		TextArea.insert('end -1 chars', "[ " + str(i + 1) + " ] " + tasks_list[i])
+	
+
+# Driver code 
+if __name__ == "__main__" :
+
+	# create a GUI window
+	gui = Tk()
+
+	# set the background colour of GUI window 
+	gui.configure(background = "light green")
+
+	# set the title of GUI window
+	gui.title("ToDo App")
+
+	# set the configuration of GUI window 
+	gui.geometry("250x300")
+
+	# create a label : Enter Your Task
+	enterTask = Label(gui, text = "Enter Your Task", bg = "light green")
+
+	# create a text entry box 
+	# for typing the task
+	enterTaskField = Entry(gui)
+
+	# create a Submit Button and place into the root window
+	# when user press the button, the command or 
+	# function affiliated to that button is executed 
+	Submit = Button(gui, text = "Submit", fg = "Black", bg = "Red", command = insertTask)
+
+	# create a text area for the root
+	# with lunida 13 font
+	# text area is for writing the content
+	TextArea = Text(gui, height = 5, width = 25, font = "lucida 13")
+
+	# create a label : Delete Task Number
+	taskNumber = Label(gui, text = "Delete Task Number", bg = "blue")
+						
+	taskNumberField = Text(gui, height = 1, width = 2, font = "lucida 13")
+
+	# create a Delete Button and place into the root window
+	# when user press the button, the command or 
+	# function affiliated to that button is executed .
+	delete = Button(gui, text = "Delete", fg = "Black", bg = "Red", command = delete)
+
+	# create a Exit Button and place into the root window
+	# when user press the button, the command or 
+	# function affiliated to that button is executed .
+	Exit = Button(gui, text = "Exit", fg = "Black", bg = "Red", command = exit)
+
+	# grid method is used for placing 
+	# the widgets at respective positions 
+	# in table like structure.
+	enterTask.grid(row = 0, column = 2)
+
+	# ipadx attributed set the entry box horizontal size			 
+	enterTaskField.grid(row = 1, column = 2, ipadx = 50)
+						
+	Submit.grid(row = 2, column = 2)
+		
+	# padx attributed provide x-axis margin 
+	# from the root window to the widget.
+	TextArea.grid(row = 3, column = 2, padx = 10, sticky = W)
+						
+	taskNumber.grid(row = 4, column = 2, pady = 5)
+						
+	taskNumberField.grid(row = 5, column = 2)
+
+	# pady attributed provide y-axis
+	# margin from the widget.				 
+	delete.grid(row = 6, column = 2, pady = 5)
+						
+	Exit.grid(row = 7, column = 2)
+
+	# start the GUI 
+	gui.mainloop()
