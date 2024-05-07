@@ -51,10 +51,10 @@ def retrieve_database():
   
 if __name__ == "__main__":  
     guiWindow = tk.Tk()  
-    guiWindow.title("To-Do List Manager - JAVATPOINT")  
+    guiWindow.title("To-Do List app")  
     guiWindow.geometry("500x450+750+250")  
     guiWindow.resizable(0, 0)  
-    guiWindow.configure(bg = "#FAEBD7")  
+    guiWindow.configure(bg = "light blue")  
   
     the_connection = sql.connect('listOfTasks.db')  
     the_cursor = the_connection.cursor()  
