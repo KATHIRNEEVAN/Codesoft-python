@@ -1,167 +1,145 @@
-from tkinter import *
-
-from tkinter import messagebox
-
-tasks_list = []
-
-counter = 1
-
-def inputError() :
-	
-	if enterTaskField.get() == "" :
-		
-		messagebox.showerror("Input Error")
-		
-		return 0
-	
-	return 1
-
-def clear_taskNumberField() :
-	
-	taskNumberField.delete(0.0, END)
-
-def clear_taskField() :
-
-	enterTaskField.delete(0, END)
-	
-def insertTask():
-
-	global counter
-	
-	# check for error
-	value = inputError()
-
-	# if error occur then return
-	if value == 0 :
-		return
-
-	# get the task string concatenating
-	# with new line character
-	content = enterTaskField.get() + "\n"
-
-	# store task in the list
-	tasks_list.append(content)
-
-	# insert content of task entry field to the text area
-	# add task one by one in below one by one
-	TextArea.insert('end -1 chars', "[ " + str(counter) + " ] " + content)
-
-	# incremented
-	counter += 1
-
-	# function calling for deleting the content of task field
-	clear_taskField()
-
-# function for deleting the specified task
-def delete() :
-	
-	global counter
-	
-	# handling the empty task error
-	if len(tasks_list) == 0 :
-		messagebox.showerror("No task")
-		return
-
-	# get the task number, which is required to delete
-	number = taskNumberField.get(1.0, END)
-
-	# checking for input error when
-	# empty input in task number field
-	if number == "\n" :
-		messagebox.showerror("input error")
-		return
-	
-	else :
-		task_no = int(number)
-
-	# function calling for deleting the
-	# content of task number field
-	clear_taskNumberField()
-	
-	# deleted specified task from the list
-	tasks_list.pop(task_no - 1)
-
-	# decremented 
-	counter -= 1
-	
-	# whole content of text area widget is deleted
-	TextArea.delete(1.0, END)
-
-	# rewriting the task after deleting one task at a time
-	for i in range(len(tasks_list)) :
-		TextArea.insert('end -1 chars', "[ " + str(i + 1) + " ] " + tasks_list[i])
-	
-
-# Driver code 
-if __name__ == "__main__" :
-
-	# create a GUI window
-	gui = Tk()
-
-	# set the background colour of GUI window 
-	gui.configure(background = "light green")
-
-	# set the title of GUI window
-	gui.title("ToDo App")
-
-	# set the configuration of GUI window 
-	gui.geometry("250x300")
-
-	# create a label : Enter Your Task
-	enterTask = Label(gui, text = "Enter Your Task", bg = "light green")
-
-	# create a text entry box 
-	# for typing the task
-	enterTaskField = Entry(gui)
-
-	# create a Submit Button and place into the root window
-	# when user press the button, the command or 
-	# function affiliated to that button is executed 
-	Submit = Button(gui, text = "Submit", fg = "Black", bg = "Red", command = insertTask)
-
-	# create a text area for the root
-	# with lunida 13 font
-	# text area is for writing the content
-	TextArea = Text(gui, height = 5, width = 25, font = "lucida 13")
-
-	# create a label : Delete Task Number
-	taskNumber = Label(gui, text = "Delete Task Number", bg = "blue")
-						
-	taskNumberField = Text(gui, height = 1, width = 2, font = "lucida 13")
-
-	# create a Delete Button and place into the root window
-	# when user press the button, the command or 
-	# function affiliated to that button is executed .
-	delete = Button(gui, text = "Delete", fg = "Black", bg = "Red", command = delete)
-
-	# create a Exit Button and place into the root window
-	# when user press the button, the command or 
-	# function affiliated to that button is executed .
-	Exit = Button(gui, text = "Exit", fg = "Black", bg = "Red", command = exit)
-
-	# grid method is used for placing 
-	# the widgets at respective positions 
-	# in table like structure.
-	enterTask.grid(row = 0, column = 2)
-
-	# ipadx attributed set the entry box horizontal size			 
-	enterTaskField.grid(row = 1, column = 2, ipadx = 50)
-						
-	Submit.grid(row = 2, column = 2)
-		
-	# padx attributed provide x-axis margin 
-	# from the root window to the widget.
-	TextArea.grid(row = 3, column = 2, padx = 10, sticky = W)
-						
-	taskNumber.grid(row = 4, column = 2, pady = 5)
-						
-	taskNumberField.grid(row = 5, column = 2)
-
-	# pady attributed provide y-axis
-	# margin from the widget.				 
-	delete.grid(row = 6, column = 2, pady = 5)
-						
-	Exit.grid(row = 7, column = 2)
-
-	# start the GUI 
-	gui.mainloop()
+import tkinter as tk                   
+from tkinter import ttk               
+from tkinter import messagebox         
+import sqlite3 as sql                   
+  
+def add_task():  
+    task_string = task_field.get()  
+    if len(task_string) == 0:  
+        messagebox.showinfo('Error', 'Field is Empty.')  
+    else:  
+        tasks.append(task_string)  
+        the_cursor.execute('insert into tasks values (?)', (task_string ,))  
+        list_update()  
+        task_field.delete(0, 'end')  
+  
+def list_update():  
+    clear_list()  
+    for task in tasks:  
+        task_listbox.insert('end', task)  
+  
+def delete_task():  
+    try:  
+        the_value = task_listbox.get(task_listbox.curselection())  
+        if the_value in tasks:  
+            tasks.remove(the_value)  
+            list_update()  
+            the_cursor.execute('delete from tasks where title = ?', (the_value,))  
+    except:  
+        messagebox.showinfo('Error', 'No Task Selected. Cannot Delete.')        
+  
+def delete_all_tasks():  
+    message_box = messagebox.askyesno('Delete All', 'Are you sure?')  
+    if message_box == True:  
+        while(len(tasks) != 0):  
+            tasks.pop()  
+        the_cursor.execute('delete from tasks')  
+        list_update()  
+  
+def clear_list():  
+    task_listbox.delete(0, 'end')  
+  
+def close():  
+    print(tasks)  
+    guiWindow.destroy()  
+  
+def retrieve_database():  
+    while(len(tasks) != 0):  
+        tasks.pop()  
+    for row in the_cursor.execute('select title from tasks'):  
+        tasks.append(row[0])  
+  
+if __name__ == "__main__":  
+    guiWindow = tk.Tk()  
+    guiWindow.title("To-Do List Manager - JAVATPOINT")  
+    guiWindow.geometry("500x450+750+250")  
+    guiWindow.resizable(0, 0)  
+    guiWindow.configure(bg = "#FAEBD7")  
+  
+    the_connection = sql.connect('listOfTasks.db')  
+    the_cursor = the_connection.cursor()  
+    the_cursor.execute('create table if not exists tasks (title text)')  
+  
+    tasks = []  
+      
+    header_frame = tk.Frame(guiWindow, bg = "#FAEBD7")  
+    functions_frame = tk.Frame(guiWindow, bg = "#FAEBD7")  
+    listbox_frame = tk.Frame(guiWindow, bg = "#FAEBD7")  
+  
+    header_frame.pack(fill = "both")  
+    functions_frame.pack(side = "left", expand = True, fill = "both")  
+    listbox_frame.pack(side = "right", expand = True, fill = "both")  
+      
+    header_label = ttk.Label(  
+        header_frame,  
+        text = "The To-Do List",  
+        font = ("Brush Script MT", "30"),  
+        background = "#FAEBD7",  
+        foreground = "#8B4513"  
+    )  
+    header_label.pack(padx = 20, pady = 20)  
+  
+    task_label = ttk.Label(  
+        functions_frame,  
+        text = "Enter the Task:",  
+        font = ("Consolas", "11", "bold"),  
+        background = "#FAEBD7",  
+        foreground = "#000000"  
+    )  
+    task_label.place(x = 30, y = 40)  
+      
+    task_field = ttk.Entry(  
+        functions_frame,  
+        font = ("Consolas", "12"),  
+        width = 18,  
+        background = "#FFF8DC",  
+        foreground = "#A52A2A"  
+    )  
+    task_field.place(x = 30, y = 80)  
+  
+    add_button = ttk.Button(  
+        functions_frame,  
+        text = "Add Task",  
+        width = 24,  
+        command = add_task  
+    )  
+    del_button = ttk.Button(  
+        functions_frame,  
+        text = "Delete Task",  
+        width = 24,  
+        command = delete_task  
+    )  
+    del_all_button = ttk.Button(  
+        functions_frame,  
+        text = "Delete All Tasks",  
+        width = 24,  
+        command = delete_all_tasks  
+    )  
+    exit_button = ttk.Button(  
+        functions_frame,  
+        text = "Exit",  
+        width = 24,  
+        command = close  
+    )  
+    add_button.place(x = 30, y = 120)  
+    del_button.place(x = 30, y = 160)  
+    del_all_button.place(x = 30, y = 200)  
+    exit_button.place(x = 30, y = 240)  
+  
+    task_listbox = tk.Listbox(  
+        listbox_frame,  
+        width = 26,  
+        height = 13,  
+        selectmode = 'SINGLE',  
+        background = "#FFFFFF",  
+        foreground = "#000000",  
+        selectbackground = "#CD853F",  
+        selectforeground = "#FFFFFF"  
+    )  
+    task_listbox.place(x = 10, y = 20)  
+  
+    retrieve_database()  
+    list_update()  
+    guiWindow.mainloop()  
+    the_connection.commit()  
+    the_cursor.close()
